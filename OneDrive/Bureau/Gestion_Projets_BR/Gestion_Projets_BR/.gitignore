@@ -1,0 +1,23 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Java
+backend/target/
+*.class
+*.jar
+*.log
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Docker
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+src/main/resources/application-gcp.properties
