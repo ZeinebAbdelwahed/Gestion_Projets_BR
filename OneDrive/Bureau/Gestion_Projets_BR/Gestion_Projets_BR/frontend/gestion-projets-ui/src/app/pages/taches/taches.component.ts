@@ -23,7 +23,7 @@ export class TachesComponent implements OnInit {
   showForm = false;
   errorMsg = '';
 
-  readonly etats = ['A_FAIRE', 'EN_COURS', 'TERMINE'];
+  readonly etats = ['A_FAIRE', 'EN_COURS', 'TERMINEE'];
   readonly priorites = ['BASSE', 'MOYENNE', 'HAUTE', 'CRITIQUE'];
 
   constructor(
@@ -71,7 +71,7 @@ export class TachesComponent implements OnInit {
   }
 
   etatClass(etat: string): string {
-    const map: Record<string, string> = { A_FAIRE: 'bg-secondary', EN_COURS: 'bg-primary', TERMINE: 'bg-success' };
+    const map: Record<string, string> = { A_FAIRE: 'bg-secondary', EN_COURS: 'bg-primary', TERMINEE: 'bg-success' };
     return map[etat] || 'bg-light text-dark';
   }
 

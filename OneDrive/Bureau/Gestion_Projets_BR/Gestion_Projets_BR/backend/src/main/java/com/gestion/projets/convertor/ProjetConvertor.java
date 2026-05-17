@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,13 +23,17 @@ public class ProjetConvertor {
         // mapper les champs simples : id, nom, dateDebut, dateFin, budget, statut
         ProjetDTO dto = mmapper.map(projet, ProjetDTO.class);
 
-        // calculer le cout total des ressources
-        BigDecimal coutTotal = projet.getRessources().stream()
+        // union : ressources du projet + ressources de toutes ses taches
+        Set<Ressource> toutesRessources = new HashSet<>(projet.getRessources());
+        projet.getTaches().forEach(tache -> toutesRessources.addAll(tache.getRessources()));
+
+        // calculer le cout total reel (toutes ressources confondues)
+        BigDecimal coutTotal = toutesRessources.stream()
                 .map(Ressource::getCout)
                 .filter(c -> c != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // setter les champs calcules manuellement (comme nomGr du prof)
+        // setter les champs calcules manuellement
         dto.setRessourceIds(projet.getRessources().stream()
                 .map(Ressource::getId)
                 .collect(Collectors.toSet()));

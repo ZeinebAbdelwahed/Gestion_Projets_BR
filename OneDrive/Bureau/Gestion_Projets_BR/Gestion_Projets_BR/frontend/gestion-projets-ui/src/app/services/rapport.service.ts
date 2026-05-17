@@ -11,11 +11,11 @@ export class RapportService {
   constructor(private http: HttpClient) {}
 
   getRapportFinancier(projetId: number): Observable<RapportFinancierDTO> {
-    return this.http.get<RapportFinancierDTO>(`${this.url}/financier/${projetId}`);
+    return this.http.get<RapportFinancierDTO>(`${this.url}/projet/${projetId}`);
   }
 
   getAllRapports(): Observable<RapportFinancierDTO[]> {
-    return this.http.get<RapportFinancierDTO[]>(`${this.url}/financier`);
+    return this.http.get<RapportFinancierDTO[]>(`${this.url}/couts`);
   }
 
   getAvancement(projetId: number): Observable<AvancementDTO> {

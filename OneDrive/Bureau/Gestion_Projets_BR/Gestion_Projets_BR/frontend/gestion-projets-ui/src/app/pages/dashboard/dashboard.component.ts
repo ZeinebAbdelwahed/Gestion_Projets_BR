@@ -31,15 +31,18 @@ export class DashboardComponent implements OnInit {
       taches: this.tacheService.getAll(),
       employes: this.employeService.getAll(),
       ressources: this.ressourceService.getAll()
-    }).subscribe(({ projets, taches, employes, ressources }) => {
-      this.stats = {
-        projets: projets.length,
-        taches: taches.length,
-        employes: employes.length,
-        ressources: ressources.length
-      };
-      this.projetsRecents = projets.slice(0, 5);
-      this.tachesRecentes = taches.slice(0, 5);
+    }).subscribe({
+      next: ({ projets, taches, employes, ressources }) => {
+        this.stats = {
+          projets: projets.length,
+          taches: taches.length,
+          employes: employes.length,
+          ressources: ressources.length
+        };
+        this.projetsRecents = projets.slice(0, 5);
+        this.tachesRecentes = taches.slice(0, 5);
+      },
+      error: (err) => console.error('Erreur chargement dashboard:', err)
     });
   }
 
@@ -52,7 +55,7 @@ export class DashboardComponent implements OnInit {
   }
 
   etatClass(etat: string): string {
-    const map: Record<string, string> = { A_FAIRE: 'bg-secondary', EN_COURS: 'bg-primary', TERMINE: 'bg-success' };
+    const map: Record<string, string> = { A_FAIRE: 'bg-secondary', EN_COURS: 'bg-primary', TERMINEE: 'bg-success' };
     return map[etat] || 'bg-light text-dark';
   }
 }

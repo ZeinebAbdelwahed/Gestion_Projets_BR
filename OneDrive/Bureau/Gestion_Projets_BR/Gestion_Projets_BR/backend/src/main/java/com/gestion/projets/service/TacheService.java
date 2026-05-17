@@ -12,6 +12,7 @@ import com.gestion.projets.repository.RessourceRepository;
 import com.gestion.projets.repository.TacheRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -36,10 +37,12 @@ public class TacheService {
         this.tacheConvertor = tacheConvertor;
     }
 
+    @Transactional(readOnly = true)
     public List<TacheDTO> findAll() {
         return tacheConvertor.toListDto(tacheRepository.findAll());
     }
 
+    @Transactional(readOnly = true)
     public TacheDTO findById(Long id) {
         Tache tache = tacheRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -47,10 +50,12 @@ public class TacheService {
         return tacheConvertor.toDto(tache);
     }
 
+    @Transactional(readOnly = true)
     public List<TacheDTO> findByProjetId(Long projetId) {
         return tacheConvertor.toListDto(tacheRepository.findByProjetId(projetId));
     }
 
+    @Transactional
     public TacheDTO create(TacheDTO dto) {
         Tache tache = buildEntity(dto);
         validateDeadline(dto.getDeadline(), tache.getProjet());
@@ -58,6 +63,7 @@ public class TacheService {
         return tacheConvertor.toDto(tache);
     }
 
+    @Transactional
     public TacheDTO update(Long id, TacheDTO dto) {
         Tache tache = tacheRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -88,6 +94,7 @@ public class TacheService {
         return tacheConvertor.toDto(tache);
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!tacheRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -96,6 +103,7 @@ public class TacheService {
         tacheRepository.deleteById(id);
     }
 
+    @Transactional
     public TacheDTO addRessource(Long tacheId, Long ressourceId) {
         Tache tache = tacheRepository.findById(tacheId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -109,6 +117,7 @@ public class TacheService {
         return tacheConvertor.toDto(tache);
     }
 
+    @Transactional
     public TacheDTO removeRessource(Long tacheId, Long ressourceId) {
         Tache tache = tacheRepository.findById(tacheId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
