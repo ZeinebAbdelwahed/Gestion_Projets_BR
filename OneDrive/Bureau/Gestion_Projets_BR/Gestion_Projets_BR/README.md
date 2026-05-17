@@ -1,6 +1,11 @@
 # Gestion des Projets avec Budgets et Ressources
 
-Application web complète de gestion des projets avec suivi budgétaire et attribution des ressources.
+Application web complète de gestion de projets avec suivi budgétaire et attribution des ressources, déployée sur **Google Cloud Platform**.
+
+🌐 **Application en ligne** : https://gestion-frontend-417904183240.europe-west9.run.app  
+📡 **API Backend** : https://gestion-backend-417904183240.europe-west9.run.app/swagger-ui.html
+
+---
 
 ## 📋 Description du Projet
 
@@ -23,126 +28,162 @@ Ce projet est une solution de gestion de projets permettant de :
 | Spring Validation | 3.2.x | Validation des DTOs |
 | SpringDoc OpenAPI | 2.3.0 | Documentation API (Swagger) |
 | Lombok | Latest | Réduction du boilerplate |
-| MySQL | 8.0 | Base de données (production) |
-| H2 | Latest | Base de données (développement) |
+| MySQL | 8.4 | Base de données (Cloud SQL GCP) |
 | Maven | 3.9.x | Build tool |
 
 ### Frontend
 | Technologie | Version | Usage |
 |-------------|---------|-------|
 | Angular | 17 | Framework frontend |
+| Angular SSR | 17 | Server-Side Rendering (Node.js/Express) |
 | TypeScript | 5.x | Langage |
 | RxJS | 7.x | Programmation réactive |
 
-### DevOps
+### DevOps & Cloud
 | Technologie | Usage |
 |-------------|-------|
-| Docker | Conteneurisation |
-| Docker Compose | Orchestration multi-conteneurs |
-| Nginx | Serveur web frontend |
+| Docker | Conteneurisation (multi-stage builds) |
+| Docker Compose | Orchestration locale multi-conteneurs |
+| GCP Cloud Run | Déploiement serverless backend & frontend |
+| GCP Cloud SQL | Base de données MySQL managée |
+| GCP Artifact Registry | Registre d'images Docker |
 
 ## 📁 Structure du Projet
 
 ```
 Gestion_Projets_BR/
-├── backend/                    # API REST Spring Boot
+├── backend/                          # API REST Spring Boot
 │   ├── src/main/java/com/gestion/projets/
-│   │   ├── config/            # Configuration (CORS, OpenAPI, Data)
-│   │   ├── controller/        # Contrôleurs REST
-│   │   ├── dto/               # Data Transfer Objects
-│   │   ├── exception/         # Gestion des erreurs
-│   │   ├── model/             # Entités JPA
-│   │   ├── repository/        # Repositories Spring Data
-│   │   └── service/           # Logique métier
+│   │   ├── config/                   # CORS, OpenAPI, Data initializer, MapStruct
+│   │   ├── controller/               # Contrôleurs REST
+│   │   ├── convertor/                # Convertisseurs MapStruct (Entity ↔ DTO)
+│   │   ├── dto/                      # Data Transfer Objects
+│   │   ├── entity/                   # Entités JPA
+│   │   ├── repository/               # Repositories Spring Data
+│   │   └── service/                  # Logique métier
+│   ├── src/main/resources/
+│   │   ├── application.properties         # Config par défaut (H2)
+│   │   └── application-gcp.properties     # Config GCP (Cloud SQL, CORS)
 │   ├── Dockerfile
 │   └── pom.xml
-├── frontend/                   # Interface Angular
-│   ├── src/app/
-│   │   ├── models/            # Interfaces TypeScript
-│   │   ├── services/          # Services HTTP
-│   │   └── pages/             # Composants de pages
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docker-compose.yml
+├── frontend/
+│   └── gestion-projets-ui/           # Application Angular 17 SSR
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── components/       # Composants partagés
+│       │   │   └── pages/            # Pages de l'application
+│       │   └── environments/
+│       │       ├── environment.ts           # Config développement local
+│       │       └── environment.prod.ts      # Config production (GCP)
+│       ├── angular.json
+│       ├── server.ts                 # Serveur Express SSR
+│       └── package.json
+│   └── Dockerfile
+├── docker-compose.yml                # Orchestration locale
 └── README.md
 ```
+
+---
 
 ## 🏗 Architecture
 
 ```
-┌─────────────────┐     HTTP      ┌──────────────────┐     JPA     ┌─────────────┐
-│   Angular 17    │ ──────────── │  Spring Boot 3   │ ──────────│   MySQL 8   │
-│   (Port 4200)   │   REST API   │   (Port 8080)    │           │ (Port 3306) │
-│                 │              │                  │           │             │
-│  - Dashboard    │              │  - Controllers   │           │  - projets  │
-│  - Projets      │              │  - Services      │           │  - taches   │
-│  - Tâches       │              │  - DTOs+Valid.   │           │  - ressources│
-│  - Ressources   │              │  - Repositories  │           │  - employes │
-│  - Employés     │              │  - Swagger UI    │           │             │
-│  - Rapports     │              │                  │           │             │
-└─────────────────┘              └──────────────────┘           └─────────────┘
+┌──────────────────────────────┐     HTTPS     ┌──────────────────────────┐     JPA      ┌───────────────────────┐
+│   Angular 17 SSR             │ ────────────▶ │  Spring Boot 3.2.5       │ ───────────▶ │  Cloud SQL MySQL 8.4  │
+│   Node.js/Express (Port 4000)│   REST API    │  (Port 8080)             │              │  (GCP europe-west9)   │
+│                              │               │                          │              │                       │
+│  - Dashboard (SSR)           │               │  - Controllers REST       │              │  - projets            │
+│  - Projets                   │               │  - Services métier        │              │  - taches             │
+│  - Tâches                    │               │  - DTOs + Validation      │              │  - ressources         │
+│  - Ressources                │               │  - Repositories JPA       │              │  - employes           │
+│  - Employés                  │               │  - Swagger UI             │              │                       │
+│  - Rapports                  │               │  - CORS configuré         │              │                       │
+└──────────────────────────────┘               └──────────────────────────┘              └───────────────────────┘
+        GCP Cloud Run                                 GCP Cloud Run                            GCP Cloud SQL
+   europe-west9 (Port 4000)                      europe-west9 (Port 8080)
 ```
 
-## 🚀 Instructions d'Installation et d'Exécution
+---
 
-### Option 1 : Docker (Recommandé)
+## 🚀 Déploiement GCP (Cloud Run)
 
-**Pré-requis :** Docker et Docker Compose installés.
+### URLs de production
+| Service | URL |
+|---------|-----|
+| Frontend | https://gestion-frontend-417904183240.europe-west9.run.app |
+| Backend API | https://gestion-backend-417904183240.europe-west9.run.app |
+| Swagger UI | https://gestion-backend-417904183240.europe-west9.run.app/swagger-ui.html |
+
+### Infrastructure GCP
+- **Projet GCP** : `gestionprojetbr`
+- **Région** : `europe-west9` (Paris)
+- **Artifact Registry** : `europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/`
+- **Cloud SQL** : Instance `gestionprojetbr:europe-west9:gestion-projet-db` (MySQL 8.4)
+
+### Rebuilder et redéployer le backend
+```powershell
+docker build -t europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/backend:latest ./backend
+docker push europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/backend:latest
+gcloud run deploy gestion-backend `
+  --image=europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/backend:latest `
+  --region=europe-west9 --platform=managed --allow-unauthenticated `
+  --set-env-vars="SPRING_PROFILES_ACTIVE=gcp"
+```
+
+### Rebuilder et redéployer le frontend
+```powershell
+docker build --build-arg BACKEND_URL=https://gestion-backend-417904183240.europe-west9.run.app `
+  -t europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/frontend:latest ./frontend
+docker push europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/frontend:latest
+gcloud run deploy gestion-frontend `
+  --image=europe-west9-docker.pkg.dev/gestionprojetbr/gestion-projets/frontend:latest `
+  --region=europe-west9 --platform=managed --allow-unauthenticated --port=4000
+```
+
+---
+
+## 🐳 Exécution Locale avec Docker Compose
 
 ```bash
-# Cloner le repository
-git clone <url-du-repo>
-cd Gestion_Projets_BR
-
-# Lancer toute l'application
 docker-compose up --build
-
-# L'application sera accessible sur :
-# - Frontend : http://localhost
-# - Backend API : http://localhost:8080/api
-# - Swagger UI : http://localhost:8080/swagger-ui.html
-# - MySQL : localhost:3306
 ```
 
-Pour arrêter :
+| Service | URL locale |
+|---------|-----------|
+| Frontend | http://localhost:4200 |
+| Backend API | http://localhost:8081/api |
+| Swagger UI | http://localhost:8081/swagger-ui.html |
+| MySQL | localhost:3307 |
+
 ```bash
+# Arrêter
 docker-compose down
-```
 
-Pour supprimer les données :
-```bash
+# Supprimer les données
 docker-compose down -v
 ```
 
-### Option 2 : Développement Local
+---
 
-#### Backend
+## 💻 Développement Local (sans Docker)
+
+### Backend
 ```bash
 cd backend
-
-# Lancer avec H2 (base en mémoire)
-./mvnw spring-boot:run
-
-# Ou avec Maven installé
 mvn spring-boot:run
-
-# API disponible sur http://localhost:8080
-# Console H2 : http://localhost:8080/h2-console
-# Swagger UI : http://localhost:8080/swagger-ui.html
+# API : http://localhost:8080
+# Swagger : http://localhost:8080/swagger-ui.html
 ```
 
-#### Frontend
+### Frontend
 ```bash
-cd frontend
-
-# Installer les dépendances
-npm install
-
-# Lancer le serveur de développement
+cd frontend/gestion-projets-ui
+npm install --legacy-peer-deps
 ng serve
-
-# Application disponible sur http://localhost:4200
+# App : http://localhost:4200
 ```
+
+---
 
 ## 📡 API Endpoints
 
@@ -193,6 +234,8 @@ ng serve
 | GET | `/api/rapports/avancement/{id}` | Avancement d'un projet (% tâches) |
 | GET | `/api/rapports/avancement` | Avancement global de tous les projets |
 
+---
+
 ## ✅ Validation des Données
 
 L'API utilise **Spring Validator** (Jakarta Validation) pour assurer l'intégrité des données :
@@ -208,7 +251,9 @@ Les erreurs de validation retournent un status **400 Bad Request** avec le déta
 ### Règles Métier Validées
 - **Budget non dépassable** : L'ajout d'une ressource à un projet est refusé si le coût total dépasse le budget (HTTP 422).
 - **Deadline cohérente** : La deadline d'une tâche doit être comprise entre la date de début et la date de fin du projet (HTTP 400).
-- **Email unique** : Chaque employé doit avoir une adresse email unique.
+
+
+---
 
 ## 📊 Fonctionnalités Principales
 
@@ -220,6 +265,8 @@ Les erreurs de validation retournent un status **400 Bad Request** avec le déta
 6. **Attribution des Ressources** — Par projet et par tâche, avec validation du budget
 7. **Rapports Financiers** — Budget vs coûts, pourcentage d'utilisation, détail par ressource
 8. **Suivi Avancement** — Pourcentage de tâches terminées par projet
+
+---
 
 ## 👤 Auteur
 
