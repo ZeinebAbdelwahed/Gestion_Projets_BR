@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: gestion_projets
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     container_name: gestion-projets-backend
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
       dockerfile: Dockerfile
     container_name: gestion-projets-frontend
     ports:
-      - "80:80"
+      - "4200:4000"
     depends_on:
       - backend
     networks:
