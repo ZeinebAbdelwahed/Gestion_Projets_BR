@@ -1,0 +1,98 @@
+<div class="mb-4">
+  <h2 class="fw-bold"><i class="bi bi-bar-chart me-2 text-purple" style="color:#7c3aed"></i>Rapports</h2>
+</div>
+
+<!-- Sélection projet -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body d-flex gap-3 align-items-end">
+    <div class="flex-grow-1">
+      <label class="form-label fw-semibold">Sélectionner un projet</label>
+      <select class="form-select" [(ngModel)]="selectedProjetId" name="projetId">
+        <option [value]="null" disabled>-- Choisir un projet --</option>
+        <option *ngFor="let p of projets" [value]="p.id">{{ p.nom }}</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" (click)="charger()" [disabled]="!selectedProjetId || loading">
+      <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+      <i class="bi bi-search me-1" *ngIf="!loading"></i> Générer
+    </button>
+  </div>
+</div>
+
+<div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+<!-- Rapport d'avancement -->
+<div class="card shadow-sm mb-4" *ngIf="avancement">
+  <div class="card-header fw-semibold bg-success text-white">
+    <i class="bi bi-speedometer2 me-1"></i> Rapport d'avancement
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4 text-center">
+        <div class="fs-1 fw-bold text-success">{{ avancement.pourcentageAvancement | number:'1.0-1' }}%</div>
+        <div class="text-muted">Avancement global</div>
+        <div class="progress mt-2" style="height:12px">
+          <div class="progress-bar bg-success" [style.width.%]="avancement.pourcentageAvancement"></div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <table class="table table-sm">
+          <tbody>
+            <tr><td class="fw-semibold">Projet</td><td>{{ avancement.projetNom }}</td></tr>
+            <tr><td class="fw-semibold">Tâches totales</td><td>{{ avancement.totalTaches }}</td></tr>
+            <tr><td class="fw-semibold">Tâches terminées</td><td>{{ avancement.tachesTerminees }}</td></tr>
+            <tr><td class="fw-semibold">Tâches en cours</td><td>{{ avancement.tachesEnCours }}</td></tr>
+            <tr><td class="fw-semibold">Statut</td><td>{{ avancement.statut }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rapport financier -->
+<div class="card shadow-sm" *ngIf="rapportFinancier">
+  <div class="card-header fw-semibold" style="background:#1e293b;color:white">
+    <i class="bi bi-currency-euro me-1"></i> Rapport financier
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <div class="p-3 rounded text-center" style="background:#e8f4fd">
+          <div class="text-muted small">Budget alloué</div>
+          <div class="fs-4 fw-bold text-primary">{{ rapportFinancier.budget | currency:'EUR':'symbol':'1.0-0':'fr' }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded text-center" style="background:#fde8e8">
+          <div class="text-muted small">Coût total</div>
+          <div class="fs-4 fw-bold text-danger">{{ rapportFinancier.coutTotalRessources | currency:'EUR':'symbol':'1.0-0':'fr' }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded text-center" [style.background]="rapportFinancier.budgetRestant >= 0 ? '#e8fde8' : '#fde8e8'">
+          <div class="text-muted small">Budget restant</div>
+          <div class="fs-4 fw-bold" [ngClass]="rapportFinancier.budgetRestant >= 0 ? 'text-success' : 'text-danger'">
+            {{ rapportFinancier.budgetRestant | currency:'EUR':'symbol':'1.0-0':'fr' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détail des coûts -->
+    <h6 class="fw-semibold mt-3 mb-2">Détail des coûts par ressource</h6>
+    <table class="table table-sm table-striped" *ngIf="rapportFinancier.detailCouts?.length">
+      <thead class="table-dark">
+        <tr><th>Ressource</th><th>Type</th><th>Coût</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of rapportFinancier.detailCouts">
+          <td>{{ c.ressourceNom }}</td>
+          <td>{{ c.ressourceType }}</td>
+          <td>{{ c.cout | currency:'EUR':'symbol':'1.0-2':'fr' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="text-muted" *ngIf="!rapportFinancier.detailCouts?.length">Aucune ressource associée.</p>
+  </div>
+</div>
